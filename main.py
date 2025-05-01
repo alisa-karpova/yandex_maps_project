@@ -13,6 +13,8 @@ class Map(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi('map.ui', self)
+        self.current_theme = "light"
+        self.theme.clicked.connect(self.change_theme)
 
         # basic setup
         self.ll = '37.587998,55.733723'
@@ -25,6 +27,8 @@ class Map(QMainWindow):
         self.show_map()
 
     def keyPressEvent(self, event):
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+
         if event.key() == Qt.Key.Key_PageUp:
             ln_spn, lt_spn = self.spn.split(',')
             spn = [str(float(ln_spn) + self.delta_spn), str(float(lt_spn) + self.delta_spn)]
@@ -65,13 +69,23 @@ class Map(QMainWindow):
             self.ll = f"{ln_ll},{lt_ll}"
             self.show_map()
 
+    def change_theme(self):
+        if self.current_theme == "light":
+            self.theme.setText("light")
+            self.current_theme = "dark"
+        else:
+            self.theme.setText("dark")
+            self.current_theme = "light"
+        self.show_map()
+
     def find_toponym(self, toponym_to_find):
         geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
 
         geocoder_params = {
             "apikey": "8013b162-6b42-4997-9691-77b7074026e0",
             "geocode": toponym_to_find,
-            "format": "json"}
+            "format": "json",
+        }
 
         response = requests.get(geocoder_api_server, params=geocoder_params)
 
@@ -91,7 +105,8 @@ class Map(QMainWindow):
             "ll": self.ll,
             "spn": self.spn,
             "apikey": apikey,
-            "pt": f"{self.ll},round"
+            "pt": f"{self.ll},round",
+            "theme": self.current_theme
         }
 
         response = requests.get(map_api_server, params=map_params)
