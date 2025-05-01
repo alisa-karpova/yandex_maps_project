@@ -1,0 +1,70 @@
+import sys
+import requests
+
+from PyQt6 import uic
+from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import QMainWindow, QApplication
+
+from size import get_toponym_size
+
+
+class Map(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi('map.ui', self)
+
+        # basic setup
+        self.ll = '37.587998,55.733723'
+        self.toponym = self.find_toponym(self.ll)
+        self.spn = get_toponym_size(self.toponym)
+
+        # show
+        self.show_map()
+
+    def find_toponym(self, toponym_to_find):
+        geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
+
+        geocoder_params = {
+            "apikey": "8013b162-6b42-4997-9691-77b7074026e0",
+            "geocode": toponym_to_find,
+            "format": "json"}
+
+        response = requests.get(geocoder_api_server, params=geocoder_params)
+
+        if not response:
+            print('geocoder: wrong request')
+
+        json_response = response.json()
+        toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
+
+        return toponym
+
+    def show_map(self):
+        apikey = "f3a0fe3a-b07e-4840-a1da-06f18b2ddf13"
+        map_api_server = "https://static-maps.yandex.ru/v1"
+
+        map_params = {
+            "ll": self.ll,
+            "spn": self.spn,
+            "apikey": apikey,
+            "pt": f"{self.ll},round"
+        }
+
+        response = requests.get(map_api_server, params=map_params)
+
+        if not response:
+            print('static: wrong request')
+
+        map_file = "map.png"
+        with open(map_file, "wb") as file:
+            file.write(response.content)
+
+        self.pixmap = QPixmap(map_file)
+        self.map.setPixmap(self.pixmap)
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    map = Map()
+    map.show()
+    sys.exit(app.exec())
