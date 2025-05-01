@@ -2,6 +2,7 @@ import sys
 import requests
 
 from PyQt6 import uic
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QMainWindow, QApplication
 
@@ -17,9 +18,27 @@ class Map(QMainWindow):
         self.ll = '37.587998,55.733723'
         self.toponym = self.find_toponym(self.ll)
         self.spn = get_toponym_size(self.toponym)
+        self.delta_spn = 0.005
 
         # show
         self.show_map()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_PageUp:
+            ln_spn, lt_spn = self.spn.split(',')
+            spn = [str(float(ln_spn) + self.delta_spn), str(float(lt_spn) + self.delta_spn)]
+            self.spn = ','.join(spn)
+            self.show_map()
+
+        if event.key() == Qt.Key.Key_PageDown:
+            ln_spn, lt_spn = self.spn.split(',')
+            new_ln_spn, new_lt_spn = float(ln_spn) - self.delta_spn, float(lt_spn) - self.delta_spn
+            min_ln_spn, min_lt_spn = get_toponym_size(self.toponym).split(',')
+
+            if not (new_ln_spn < float(min_ln_spn) or new_lt_spn < float(min_lt_spn)):
+                self.spn = ','.join([str(new_ln_spn), str(new_lt_spn)])
+
+            self.show_map()
 
     def find_toponym(self, toponym_to_find):
         geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
