@@ -19,6 +19,7 @@ class Map(QMainWindow):
         self.toponym = self.find_toponym(self.ll)
         self.spn = get_toponym_size(self.toponym)
         self.delta_spn = 0.005
+        self.delta_ll = 0.00015
 
         # show
         self.show_map()
@@ -38,6 +39,30 @@ class Map(QMainWindow):
             if not (new_ln_spn < float(min_ln_spn) or new_lt_spn < float(min_lt_spn)):
                 self.spn = ','.join([str(new_ln_spn), str(new_lt_spn)])
 
+            self.show_map()
+
+        if event.key() == Qt.Key.Key_Down:
+            ln_ll, lt_ll = self.ll.split(',')
+            lt_ll = float(lt_ll) - self.delta_ll
+            self.ll = f"{ln_ll},{lt_ll}"
+            self.show_map()
+
+        if event.key() == Qt.Key.Key_Up:
+            ln_ll, lt_ll = self.ll.split(',')
+            lt_ll = float(lt_ll) + self.delta_ll
+            self.ll = f"{ln_ll},{lt_ll}"
+            self.show_map()
+
+        if event.key() == Qt.Key.Key_Left:
+            ln_ll, lt_ll = self.ll.split(',')
+            ln_ll = float(ln_ll) - self.delta_ll
+            self.ll = f"{ln_ll},{lt_ll}"
+            self.show_map()
+
+        if event.key() == Qt.Key.Key_Right:
+            ln_ll, lt_ll = self.ll.split(',')
+            ln_ll = (float(ln_ll) + self.delta_ll)
+            self.ll = f"{ln_ll},{lt_ll}"
             self.show_map()
 
     def find_toponym(self, toponym_to_find):
