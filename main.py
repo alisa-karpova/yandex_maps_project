@@ -13,12 +13,13 @@ class Map(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi('map.ui', self)
-        self.current_theme = "light"
         self.theme.clicked.connect(self.change_theme)
+        self.btn_search.clicked.connect(self.search)
 
         # basic setup
         self.ll = '37.587998,55.733723'
         self.toponym = self.find_toponym(self.ll)
+        self.current_theme = "light"
         self.spn = get_toponym_size(self.toponym)
         self.delta_spn = 0.005
         self.delta_ll = 0.00015
@@ -76,6 +77,12 @@ class Map(QMainWindow):
         else:
             self.theme.setText("dark")
             self.current_theme = "light"
+        self.show_map()
+
+    def search(self):
+        self.toponym = self.find_toponym(self.request.text())
+        self.ll = ','.join(self.toponym["Point"]["pos"].split())
+        self.spn = get_toponym_size(self.toponym)
         self.show_map()
 
     def find_toponym(self, toponym_to_find):
