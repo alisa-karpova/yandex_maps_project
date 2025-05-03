@@ -18,6 +18,7 @@ class Map(QMainWindow):
 
         # basic setup
         self.ll = '37.587998,55.733723'
+        self.pt = '37.587998,55.733723'
         self.toponym = self.find_toponym(self.ll)
         self.current_theme = "light"
         self.spn = get_toponym_size(self.toponym)
@@ -112,7 +113,7 @@ class Map(QMainWindow):
             "ll": self.ll,
             "spn": self.spn,
             "apikey": apikey,
-            "pt": f"{self.ll},round",
+            "pt": f"{self.pt},round",
             "theme": self.current_theme
         }
 
