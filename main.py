@@ -7,6 +7,7 @@ from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QMainWindow, QApplication
 
 from size import get_toponym_size
+from distance import lonlat_distance
 
 
 class Map(QMainWindow):
@@ -21,6 +22,7 @@ class Map(QMainWindow):
         # basic setup
         self.ll = '37.587998,55.733723'
         self.pt = '37.587998,55.733723'
+        self.org = None
         self.toponym = self.find_toponym(self.ll)
         self.current_theme = "light"
         self.spn = get_toponym_size(self.toponym)
@@ -80,6 +82,9 @@ class Map(QMainWindow):
             self.spn = get_toponym_size(self.toponym)
             self.show_map()
 
+        if event.button() == Qt.MouseButton.RightButton:
+            self.find_org()
+
     def change_theme(self):
         if self.current_theme == "light":
             self.theme_btn.setText("light")
@@ -131,6 +136,34 @@ class Map(QMainWindow):
         toponym = json_response["response"]["GeoObjectCollection"]["featureMember"][0]["GeoObject"]
 
         return toponym
+
+    def find_org(self):
+        search_api_server = "https://search-maps.yandex.ru/v1/"
+        api_key = "dda3ddba-c9ea-4ead-9010-f43fbc15c6e3"
+        obj = self.find_toponym(self.ll)
+        search_params = {
+            "apikey": api_key,
+            "text": obj["name"],
+            "lang": "ru_RU",
+            'type': "biz"}
+
+        response = requests.get(search_api_server, params=search_params)
+
+        if not response:
+            print('org: wrong request')
+
+        json_response = response.json()
+        org = json_response["features"][0]
+
+        if org:
+            pt_coords = [float(el) for el in self.ll.split(',')]
+            coords = org['geometry']["coordinates"]
+            if lonlat_distance(pt_coords, coords) <= 50:
+                self.address.setText(org['properties']['name'])
+            else:
+                self.address.setText('Организация не найдена')
+        else:
+            self.address.setText('Организация не найдена')
 
     def show_map(self):
         apikey = "f3a0fe3a-b07e-4840-a1da-06f18b2ddf13"
