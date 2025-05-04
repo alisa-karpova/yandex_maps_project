@@ -13,8 +13,9 @@ class Map(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi('map.ui', self)
-        self.theme.clicked.connect(self.change_theme)
-        self.btn_search.clicked.connect(self.search)
+        self.theme_btn.clicked.connect(self.change_theme)
+        self.search_btn.clicked.connect(self.search)
+        self.reset_btn.clicked.connect(self.reset)
 
         # basic setup
         self.ll = '37.587998,55.733723'
@@ -73,17 +74,22 @@ class Map(QMainWindow):
 
     def change_theme(self):
         if self.current_theme == "light":
-            self.theme.setText("light")
+            self.theme_btn.setText("light")
             self.current_theme = "dark"
         else:
-            self.theme.setText("dark")
+            self.theme_btn.setText("dark")
             self.current_theme = "light"
         self.show_map()
 
     def search(self):
         self.toponym = self.find_toponym(self.request.text())
         self.ll = ','.join(self.toponym["Point"]["pos"].split())
+        self.pt = self.ll
         self.spn = get_toponym_size(self.toponym)
+        self.show_map()
+
+    def reset(self):
+        self.pt = None
         self.show_map()
 
     def find_toponym(self, toponym_to_find):
@@ -113,9 +119,11 @@ class Map(QMainWindow):
             "ll": self.ll,
             "spn": self.spn,
             "apikey": apikey,
-            "pt": f"{self.pt},round",
             "theme": self.current_theme
         }
+
+        if self.pt is not None:
+            map_params["pt"] = f"{self.pt},round"
 
         response = requests.get(map_api_server, params=map_params)
 
