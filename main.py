@@ -73,6 +73,13 @@ class Map(QMainWindow):
             self.ll = f"{ln_ll},{lt_ll}"
             self.show_map()
 
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.toponym = self.find_toponym(self.ll)
+            self.pt = self.ll
+            self.spn = get_toponym_size(self.toponym)
+            self.show_map()
+
     def change_theme(self):
         if self.current_theme == "light":
             self.theme_btn.setText("light")
