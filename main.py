@@ -13,9 +13,10 @@ class Map(QMainWindow):
     def __init__(self):
         super().__init__()
         uic.loadUi('map.ui', self)
-        self.theme_btn.clicked.connect(self.change_theme)
         self.search_btn.clicked.connect(self.search)
+        self.theme_btn.clicked.connect(self.change_theme)
         self.reset_btn.clicked.connect(self.reset)
+        self.pc_rb.toggled.connect(self.postal_code)
 
         # basic setup
         self.ll = '37.587998,55.733723'
@@ -93,6 +94,18 @@ class Map(QMainWindow):
         self.show_map()
         self.address.clear()
 
+    def postal_code(self):
+        address = self.toponym['metaDataProperty']['GeocoderMetaData']['text']
+        if self.toponym['metaDataProperty']['GeocoderMetaData']['kind'] == 'house':
+            postal_code = self.toponym['metaDataProperty']['GeocoderMetaData']['Address']['postal_code']
+        else:
+            postal_code = None
+
+        if self.pc_rb.isChecked():
+            self.address.setText(f"address: {address}; postal code: {postal_code}")
+        else:
+            self.address.setText(f"address: {address}")
+
     def find_toponym(self, toponym_to_find):
         geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
 
@@ -125,6 +138,7 @@ class Map(QMainWindow):
 
         if self.pt is not None:
             map_params["pt"] = f"{self.pt},round"
+            self.postal_code()
 
         response = requests.get(map_api_server, params=map_params)
 
@@ -137,7 +151,6 @@ class Map(QMainWindow):
 
         self.pixmap = QPixmap(map_file)
         self.map.setPixmap(self.pixmap)
-        self.address.setText(self.toponym['metaDataProperty']['GeocoderMetaData']['Address']['formatted'])
 
 
 if __name__ == '__main__':
