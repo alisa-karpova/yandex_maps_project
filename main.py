@@ -91,6 +91,7 @@ class Map(QMainWindow):
     def reset(self):
         self.pt = None
         self.show_map()
+        self.address.clear()
 
     def find_toponym(self, toponym_to_find):
         geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
@@ -136,6 +137,7 @@ class Map(QMainWindow):
 
         self.pixmap = QPixmap(map_file)
         self.map.setPixmap(self.pixmap)
+        self.address.setText(self.toponym['metaDataProperty']['GeocoderMetaData']['Address']['formatted'])
 
 
 if __name__ == '__main__':
